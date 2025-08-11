@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.12)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+project(dg2)
+
+add_library(dg2 STATIC)
+
+target_sources(dg2 PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/src/dg2.c"
+    "${CMAKE_CURRENT_LIST_DIR}/src/dg2_curve.c"
+    "${CMAKE_CURRENT_LIST_DIR}/src/dg2_disp.c"
+    "${CMAKE_CURRENT_LIST_DIR}/src/dg2_pkt.c"
+    "${CMAKE_CURRENT_LIST_DIR}/src/dg2_svi.c"
+)
+
+target_include_directories(dg2 PUBLIC
+    "${CMAKE_CURRENT_LIST_DIR}/include"
+)
+
