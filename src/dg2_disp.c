@@ -9,11 +9,11 @@ static dg2_error dg2_disp_pkt_receive(dg2_disp *disp, size_t size)
 
     size_t to_receive = disp->cb_crc ? size + 2 : size;
 
-    if (disp->cb_read(disp->rx_buff, to_receive) != to_receive) {
+    if (disp->cb_read(disp->pkt_buff, to_receive) != to_receive) {
         return DG2_ERROR_READ;
     }
 
-    return dg2_pkt_verify(disp->rx_buff, to_receive, disp->cb_crc);
+    return dg2_pkt_verify(disp->pkt_buff, to_receive, disp->cb_crc);
 }
 
 static dg2_error dg2_disp_pkt_transmit(dg2_disp *disp, dg2_pkt *pkt)
@@ -43,7 +43,7 @@ static dg2_error vp_read(dg2_disp *disp, uint16_t vp, uint8_t count, uint8_t **r
     dg2_cmd resp_cmd;
     uint16_t resp_vp;
     uint8_t resp_payload_size;
-    if ((error = dg2_pkt_parse(disp->rx_buff, &resp_cmd, &resp_vp, resp_payload, &resp_payload_size)) != DG2_OK) {
+    if ((error = dg2_pkt_parse(disp->pkt_buff, &resp_cmd, &resp_vp, resp_payload, &resp_payload_size)) != DG2_OK) {
         return error;
     }
 
@@ -57,7 +57,7 @@ static dg2_error vp_read(dg2_disp *disp, uint16_t vp, uint8_t count, uint8_t **r
 dg2_pkt dg2_disp_pkt_init(dg2_disp *disp, dg2_cmd cmd, uint16_t vp)
 {
     dg2_pkt pkt;
-    pkt.buff = disp->tx_buff;
+    pkt.buff = disp->pkt_buff;
 
     dg2_pkt_build_header(&pkt, cmd, vp);
 
@@ -86,28 +86,15 @@ inline dg2_error dg2_disp_pkt_exchange_ok(dg2_disp *disp, dg2_pkt *pkt)
 void dg2_disp_init(dg2_disp *disp,
                         dg2_cb_read cb_read,
                         dg2_cb_write cb_write,
-                        dg2_cb_crc cb_crc,
-                        uint8_t *tx_buff,
-                        size_t tx_buff_capacity,
-                        uint8_t *rx_buff,
-                        size_t rx_buff_capacity)
+                        dg2_cb_crc cb_crc)
 {
     DG2_ASSERT(disp);
     DG2_ASSERT(cb_read);
     DG2_ASSERT(cb_write);
-    DG2_ASSERT(tx_buff);
-    DG2_ASSERT(tx_buff_capacity > sizeof(dg2_pkt_header));
-    DG2_ASSERT(rx_buff);
-    DG2_ASSERT(rx_buff_capacity > sizeof(dg2_pkt_header));
 
-    disp->cb_read        = cb_read;
-    disp->cb_write       = cb_write;
-    disp->cb_crc         = cb_crc;
-
-    disp->tx_buff            = tx_buff;
-    disp->tx_buff_capacity   = tx_buff_capacity;
-    disp->rx_buff            = rx_buff;
-    disp->rx_buff_capacity   = rx_buff_capacity;
+    disp->cb_read = cb_read;
+    disp->cb_write = cb_write;
+    disp->cb_crc = cb_crc;
 }
 
 /*

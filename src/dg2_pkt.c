@@ -141,4 +141,3 @@ dg2_error dg2_pkt_parse(uint8_t *data, dg2_cmd *cmd, uint16_t *vp, uint8_t **pay
 
     return DG2_OK;
 }
-
