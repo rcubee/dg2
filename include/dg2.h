@@ -9,6 +9,7 @@ extern "C"
 #endif // __cplusplus
 
 #include <assert.h>
+#include "dg2_conf.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
