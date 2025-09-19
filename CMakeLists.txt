@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# Note: When cross-compiling for platforms where syscalls are not provided, CMake will fail to build a simple test program
+set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+
 project(dg2)
 
 add_library(dg2 STATIC)
