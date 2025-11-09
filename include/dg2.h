@@ -22,6 +22,9 @@ extern "C"
 #define DG2_ASSERT(expr)
 #endif
 
+// Todo: Avoid double evaluation
+#define DG2_MIN(expr1, expr2) (((expr1) < (expr2)) ? (expr1) : (expr2))
+
 #define DG2_LE_TO_BE_HALFWORD(halfword) ((((halfword) & 0x00FF) << 8) | (((halfword) & 0xFF00) >> 8))
 #define DG2_LE_TO_BE_WORD(word) ((((word) & 0x000000FF) << 24) | (((word) & 0x0000FF00) << 8) | (((word) & 0x00FF0000) >> 8) | (((word) & 0xFF000000) >> 24))
 
