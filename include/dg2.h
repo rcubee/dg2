@@ -16,14 +16,17 @@ extern "C"
 
 #define DG2_ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
-#if 1
+#ifdef DG2_ASSERT_ENABLE
 #define DG2_ASSERT(expr) assert(expr)
 #else
 #define DG2_ASSERT(expr)
 #endif
 
-// Todo: Avoid double evaluation
-#define DG2_MIN(expr1, expr2) (((expr1) < (expr2)) ? (expr1) : (expr2))
+#define DG2_MIN(expr1, expr2) ({ \
+    typeof(expr1) _val1 = (expr1); \
+    typeof(expr2) _val2 = (expr2); \
+    _val1 < _val2 ? _val1 : _val2; \
+})
 
 #define DG2_LE_TO_BE_HALFWORD(halfword) ((((halfword) & 0x00FF) << 8) | (((halfword) & 0xFF00) >> 8))
 #define DG2_LE_TO_BE_WORD(word) ((((word) & 0x000000FF) << 24) | (((word) & 0x0000FF00) << 8) | (((word) & 0x00FF0000) >> 8) | (((word) & 0xFF000000) >> 24))
