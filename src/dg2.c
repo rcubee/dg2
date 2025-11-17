@@ -4,19 +4,18 @@
 char *dg2_error_to_str(dg2_error error)
 {
     switch (error) {
-        case DG2_OK: return "Ok";
-        case DG2_ERROR: return "Error";
-        case DG2_ERROR_READ: return "Read error";
-        case DG2_ERROR_WRITE: return "Write error";
-        case DG2_ERROR_PKT_INCOMPLETE: return "Incomplete packet";
-        case DG2_ERROR_PKT_INVALID_HEADER: return "Invalid packet header";
-        case DG2_ERROR_PKT_TOO_LONG: return "Packet is too long";
-        case DG2_ERROR_CRC_MISMATCH: return "CRC mismatch";
-        default: return "Unknown error";
+    case DG2_OK: return "Ok";
+    case DG2_ERROR: return "Error";
+    case DG2_ERROR_READ: return "Read error";
+    case DG2_ERROR_WRITE: return "Write error";
+    case DG2_ERROR_BUSY: return "Busy";
+    case DG2_ERROR_TIMEOUT: return "Timeout";
+
+    default: return "Unknown error";
     }
 }
 
-inline void dg2_read_bytes(uint8_t *dest, uint8_t *bytes, size_t count)
+void dg2_read_bytes(uint8_t *dest, uint8_t *bytes, size_t count)
 {
     memcpy(dest, bytes, count);
 }
@@ -62,7 +61,8 @@ void dg2_write_halfwords(void *dest, uint16_t *halfwords, size_t count)
 
     size_t offset = 0;
     for (size_t i = 0; i < count; ++i) {
-        uint16_t halfword = DG2_LE_TO_BE_HALFWORD(halfwords[i]);
+        // uint16_t halfword = DG2_LE_TO_BE_HALFWORD(halfwords[i]); TODO
+        uint16_t halfword = DG2_SWAP16(halfwords[i]);
 
         memcpy(dest + offset, &halfword, sizeof(uint16_t));
         offset += sizeof(uint16_t);
@@ -76,7 +76,8 @@ void dg2_write_words(void *dest, uint32_t *words, size_t count)
 
     size_t offset = 0;
     for (size_t i = 0; i < count; ++i) {
-        uint32_t word = DG2_LE_TO_BE_WORD(words[i]);
+        // uint32_t word = DG2_LE_TO_BE_WORD(words[i]); TODO
+        uint32_t word = DG2_SWAP32(words[i]);
 
         memcpy(dest + offset, &word, sizeof(uint32_t));
         offset += sizeof(uint32_t);

@@ -10,6 +10,16 @@ project(dg2)
 
 add_library(dg2 STATIC)
 
+target_compile_options(dg2 PRIVATE -Wall -Werror -Werror=switch-enum)
+
+if({CMAKE_BUILD_TYPE} STREQUAL "Release")
+target_compile_definitions(dg2 PRIVATE DG2_ENABLE_ASSERT=OFF)
+target_compile_options(dg2 PRIVATE -Os)
+else()
+target_compile_definitions(dg2 PRIVATE DG2_ENABLE_ASSERT=ON)
+target_compile_options(dg2 PRIVATE -Og)
+endif()
+
 target_sources(dg2 PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/src/dg2.c"
     "${CMAKE_CURRENT_LIST_DIR}/src/dg2_circ_buff.c"

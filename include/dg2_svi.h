@@ -1,6 +1,8 @@
 #ifndef DG2_SVI_H_
 #define DG2_SVI_H_
 
+#if 0
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -74,5 +76,7 @@ dg2_error dg2_disp_curves_write(dg2_disp *disp, dg2_curves *curves);
 #ifdef __cplusplus
 }
 #endif // __cplusplus
+
+#endif // 0
 
 #endif /* DG2_SVI_H_ */

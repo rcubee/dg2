@@ -15,7 +15,7 @@
 static size_t wrap_around_unsafe(size_t val, size_t wrap_at)
 {
     DG2_ASSERT(wrap_at > 0U);
-    DG2_ASSERT(val < 2U * wrap_at );
+    DG2_ASSERT(val < 2U * wrap_at);
 
     if (val >= wrap_at) {
         val -= wrap_at;
@@ -57,6 +57,37 @@ void dg2_circ_buff_init(dg2_circ_buff *circ_buff, uint8_t *buff, size_t capacity
     circ_buff->size = 0U;
 }
 
+size_t dg2_circ_buff_get_free_space(const dg2_circ_buff *circ_buff)
+{
+    DG2_ASSERT(circ_buff);
+
+    return circ_buff->capacity - dg2_circ_buff_get_size(circ_buff);
+}
+
+size_t dg2_circ_buff_discard_back(dg2_circ_buff *circ_buff, size_t size)
+{
+    DG2_ASSERT(circ_buff);
+
+    // Note: Don't discard more than possible
+    size = DG2_MIN(size, dg2_circ_buff_get_size(circ_buff));
+
+    dg2_circ_buff_discard_back_unsafe(circ_buff, size);
+
+    return size;
+}
+
+size_t dg2_circ_buff_advance_front(dg2_circ_buff *circ_buff, size_t size)
+{
+    DG2_ASSERT(circ_buff);
+
+    // Note: Don't advance more than possible
+    size = DG2_MIN(size, dg2_circ_buff_get_free_space(circ_buff));
+
+    dg2_circ_buff_advance_front_unsafe(circ_buff, size);
+
+    return size;
+}
+
 void dg2_circ_buff_clear(dg2_circ_buff *circ_buff)
 {
     DG2_ASSERT(circ_buff);
@@ -64,13 +95,6 @@ void dg2_circ_buff_clear(dg2_circ_buff *circ_buff)
     circ_buff->back = 0U;
     circ_buff->front = 0U;
     circ_buff->size = 0U;
-}
-
-size_t dg2_circ_buff_get_free_space(const dg2_circ_buff *circ_buff)
-{
-    DG2_ASSERT(circ_buff);
-
-    return circ_buff->capacity - dg2_circ_buff_get_size(circ_buff);
 }
 
 uint8_t dg2_circ_buff_peek(const dg2_circ_buff *circ_buff, uint8_t *dest, size_t rel_index)
@@ -91,28 +115,6 @@ uint8_t dg2_circ_buff_peek(const dg2_circ_buff *circ_buff, uint8_t *dest, size_t
     return 1U;
 }
 
-size_t dg2_circ_buff_discard_back(dg2_circ_buff *circ_buff, size_t size)
-{
-    DG2_ASSERT(circ_buff);
-
-    size = DG2_MIN(size, dg2_circ_buff_get_size(circ_buff));
-
-    dg2_circ_buff_discard_back_unsafe(circ_buff, size);
-
-    return size;
-}
-
-size_t dg2_circ_buff_advance_front(dg2_circ_buff *circ_buff, size_t size)
-{
-    DG2_ASSERT(circ_buff);
-
-    size = DG2_MIN(size, dg2_circ_buff_get_free_space(circ_buff));
-
-    dg2_circ_buff_advance_front_unsafe(circ_buff, size);
-
-    return size;
-}
-
 uint8_t dg2_circ_buff_pop(dg2_circ_buff *circ_buff, uint8_t *dest)
 {
     DG2_ASSERT(circ_buff);
@@ -131,30 +133,40 @@ uint8_t dg2_circ_buff_pop(dg2_circ_buff *circ_buff, uint8_t *dest)
     return 1U;
 }
 
+size_t dg2_circ_buff_copy(dg2_circ_buff* restrict circ_buff, uint8_t* restrict dest, size_t size)
+{
+    DG2_ASSERT(circ_buff);
+    DG2_ASSERT((size > 0U) ? (dest != NULL) : 1U);
+
+    size_t total_copy_size = DG2_MIN(size, circ_buff->size);
+
+    if (total_copy_size < 1U) {
+        return total_copy_size;
+    }
+
+    /* First copy */
+
+    size_t first_copy_size = DG2_MIN(circ_buff->capacity - circ_buff->back /* Don't overflow */, total_copy_size);
+
+    memcpy(dest, circ_buff->buff + circ_buff->back, first_copy_size);
+
+    /* Conditional second copy */
+
+    size_t second_copy_size = total_copy_size - first_copy_size;
+
+    if (second_copy_size > 0U) {
+        memcpy(dest + first_copy_size, circ_buff->buff /* Wrap-around */, second_copy_size);
+    }
+
+    return total_copy_size;
+}
+
 size_t dg2_circ_buff_read(dg2_circ_buff* restrict circ_buff, uint8_t* restrict dest, size_t size)
 {
     DG2_ASSERT(circ_buff);
     DG2_ASSERT((size > 0U) ? (dest != NULL) : 1U);
 
-    size_t total_read_size = DG2_MIN(size, circ_buff->size);
-
-    if (total_read_size < 1U) {
-        return total_read_size;
-    }
-
-    /* First read */
-
-    size_t first_read_size = DG2_MIN(circ_buff->capacity - circ_buff->back /* Don't overflow */, total_read_size);
-
-    memcpy(dest, circ_buff->buff + circ_buff->back, first_read_size);
-
-    /* Conditional second read */
-
-    size_t second_read_size = total_read_size - first_read_size;
-
-    if (second_read_size > 0U) {
-        memcpy(dest + first_read_size, circ_buff->buff /* Wrap-around */, second_read_size);
-    }
+    size_t total_read_size = dg2_circ_buff_copy(circ_buff, dest, size);
 
     dg2_circ_buff_discard_back_unsafe(circ_buff, total_read_size); /* Handles wrap-around */
 

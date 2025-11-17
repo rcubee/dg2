@@ -1,6 +1,8 @@
 #ifndef DG2_CURVE_H_
 #define DG2_CURVE_H_
 
+#if 0
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -45,5 +47,7 @@ void dg2_curve_write(dg2_curve *curve, uint16_t *src, uint8_t data_len);
 #ifdef __cplusplus
 }
 #endif // __cplusplus
+
+#endif // 0
 
 #endif /* DG2_CURVE_H_ */

@@ -19,6 +19,7 @@ enable_testing()
 add_executable(
     tests
     circ_buff.cpp
+    pkt.cpp
 )
 
 target_include_directories(tests PUBLIC

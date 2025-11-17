@@ -4,12 +4,14 @@
  * 5.1 System Variable Interface
  */
 
+#if 0
+
 dg2_error dg2_disp_system_reset(dg2_disp *disp)
 {
     DG2_ASSERT(disp);
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, DG2_SVI_VP_SYSTEM_RESET);
-    dg2_pkt_app_word(&pkt, 0x55AA5AA5);
+    dg2_pkt_insert_word(&pkt, 0x55AA5AA5);
 
     return dg2_disp_pkt_exchange_ok(disp, &pkt);
 }
@@ -35,8 +37,8 @@ dg2_error dg2_disp_page_set(dg2_disp *disp, uint16_t page)
     DG2_ASSERT(disp);
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, DG2_SVI_VP_PIC_SET);
-    dg2_pkt_app_halfword(&pkt, 0x5A01);
-    dg2_pkt_app_halfword(&pkt, page);
+    dg2_pkt_insert_halfword(&pkt, 0x5A01);
+    dg2_pkt_insert_halfword(&pkt, page);
 
     return dg2_disp_pkt_exchange_ok(disp, &pkt);
 }
@@ -55,14 +57,14 @@ dg2_error dg2_disp_rtc_set(dg2_disp *disp, dg2_svi_rtc *rtc)
     DG2_ASSERT(rtc);
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, DG2_SVI_VP_RTC_SET);
-    dg2_pkt_app_halfword(&pkt, 0x5AA5);
+    dg2_pkt_insert_halfword(&pkt, 0x5AA5);
 
-    dg2_pkt_app_byte(&pkt, rtc->year);
-    dg2_pkt_app_byte(&pkt, rtc->month);
-    dg2_pkt_app_byte(&pkt, rtc->day);
-    dg2_pkt_app_byte(&pkt, rtc->hour);
-    dg2_pkt_app_byte(&pkt, rtc->minute);
-    dg2_pkt_app_byte(&pkt, rtc->second);
+    dg2_pkt_insert_byte(&pkt, rtc->year);
+    dg2_pkt_insert_byte(&pkt, rtc->month);
+    dg2_pkt_insert_byte(&pkt, rtc->day);
+    dg2_pkt_insert_byte(&pkt, rtc->hour);
+    dg2_pkt_insert_byte(&pkt, rtc->minute);
+    dg2_pkt_insert_byte(&pkt, rtc->second);
 
     return dg2_disp_pkt_exchange_ok(disp, &pkt);
 }
@@ -104,7 +106,7 @@ dg2_error dg2_disp_led_set_bright(dg2_disp *disp, uint8_t bright)
     DG2_ASSERT(disp);
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, DG2_SVI_VP_LED_CONFIG);
-    dg2_pkt_app_byte(&pkt, bright);
+    dg2_pkt_insert_byte(&pkt, bright);
 
     return dg2_disp_pkt_exchange_ok(disp, &pkt);
 }
@@ -139,8 +141,8 @@ dg2_error dg2_disp_curve_buffer_set(dg2_disp *disp, dg2_curve_ch curve_ch, uint1
     DG2_ASSERT(disp);
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, DG2_SVI_VP_DYNAMIC_CURVE + 2 * curve_ch);
-    dg2_pkt_app_halfword(&pkt, storage_ptr);
-    dg2_pkt_app_halfword(&pkt, data_len);
+    dg2_pkt_insert_halfword(&pkt, storage_ptr);
+    dg2_pkt_insert_halfword(&pkt, data_len);
 
     return dg2_disp_pkt_exchange_ok(disp, &pkt);
 }
@@ -164,7 +166,7 @@ dg2_error dg2_disp_curve_clear(dg2_disp *disp, dg2_curve_ch curve_ch)
    DG2_ASSERT(disp);
 
    dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, DG2_SVI_VP_DYNAMIC_CURVE + 0x01 + 2 * curve_ch);
-   dg2_pkt_app_halfword(&pkt, 0x0000);
+   dg2_pkt_insert_halfword(&pkt, 0x0000);
 
    return dg2_disp_pkt_exchange_ok(disp, &pkt);
 }
@@ -174,12 +176,12 @@ dg2_error dg2_disp_curve_app(dg2_disp *disp, dg2_curve_ch curve_ch, int16_t data
     DG2_ASSERT(disp);
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, DG2_SVI_VP_DYNAMIC_CURVE + 0x10);
-    dg2_pkt_app_halfword(&pkt, 0x5AA5);
-    dg2_pkt_app_byte(&pkt, 0x01);
-    dg2_pkt_app_byte(&pkt, 0x00);
-    dg2_pkt_app_byte(&pkt, curve_ch);
-    dg2_pkt_app_byte(&pkt, 0x01);
-    dg2_pkt_app_halfword(&pkt, data);
+    dg2_pkt_insert_halfword(&pkt, 0x5AA5);
+    dg2_pkt_insert_byte(&pkt, 0x01);
+    dg2_pkt_insert_byte(&pkt, 0x00);
+    dg2_pkt_insert_byte(&pkt, curve_ch);
+    dg2_pkt_insert_byte(&pkt, 0x01);
+    dg2_pkt_insert_halfword(&pkt, data);
 
     return dg2_disp_pkt_exchange_ok(disp, &pkt);
 }
@@ -206,9 +208,9 @@ dg2_error dg2_disp_curves_write(dg2_disp *disp, dg2_curves *curves)
     }
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, DG2_SVI_VP_DYNAMIC_CURVE + 0x10);
-    dg2_pkt_app_halfword(&pkt, 0x5AA5);
-    dg2_pkt_app_byte(&pkt, curve_count);
-    dg2_pkt_app_byte(&pkt, 0x00);
+    dg2_pkt_insert_halfword(&pkt, 0x5AA5);
+    dg2_pkt_insert_byte(&pkt, curve_count);
+    dg2_pkt_insert_byte(&pkt, 0x00);
 
     for (uint8_t i = 0; i < curves->curve_count; ++i) {
         dg2_curve *curve = curves->curves + i;
@@ -217,12 +219,14 @@ dg2_error dg2_disp_curves_write(dg2_disp *disp, dg2_curves *curves)
             continue;
         }
 
-        dg2_pkt_app_byte(&pkt, curve->ch);
-        dg2_pkt_app_byte(&pkt, curve->data_len);
-        dg2_pkt_app_halfwords(&pkt, curve->buff, curve->data_len);
+        dg2_pkt_insert_byte(&pkt, curve->ch);
+        dg2_pkt_insert_byte(&pkt, curve->data_len);
+        dg2_pkt_insert_halfwords(&pkt, curve->buff, curve->data_len);
 
         curve->data_len = 0;
     }
 
     return dg2_disp_pkt_exchange_ok(disp, &pkt);
 }
+
+#endif // 0

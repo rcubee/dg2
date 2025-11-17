@@ -1,6 +1,8 @@
 #include "dg2.h"
 #include "dg2_curve.h"
 
+#if 0
+
 void dg2_curve_init(dg2_curve *curve, dg2_curve_ch ch, uint16_t *buff, uint8_t buff_capacity)
 {
     DG2_ASSERT(curve);
@@ -42,3 +44,5 @@ void dg2_curve_write(dg2_curve *curve, uint16_t *src, uint8_t data_len)
     memcpy(curve->buff, src, data_len * sizeof(uint16_t));
     curve->data_len = data_len;
 }
+
+#endif // 0

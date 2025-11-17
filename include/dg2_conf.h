@@ -1,6 +1,8 @@
 #ifndef DG2_CONF_H_
 #define DG2_CONF_H_
 
-#define DG2_DISP_PKT_BUFF_CAP 256
+#define DG2_ASSERT_ENABLE (1U)
+#define DG2_DISP_RX_BUFF_CAPACITY (256U)
+#define DG2_DISP_TX_BUFF_CAPACITY (256U)
 
 #endif // DG2_CONF_H_
