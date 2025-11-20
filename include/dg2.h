@@ -8,6 +8,7 @@ extern "C"
 
 #include <assert.h>
 #include "dg2_conf.h"
+#include "dg2_crc.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -44,8 +45,6 @@ typedef enum dg2_error
     DG2_ERROR_BUSY,
     DG2_ERROR_TIMEOUT
 } dg2_error;
-
-typedef uint16_t (*dg2_cb_crc)(uint8_t *data, size_t size);
 
 char *dg2_error_to_str(dg2_error error);
 

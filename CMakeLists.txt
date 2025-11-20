@@ -23,10 +23,9 @@ endif()
 target_sources(dg2 PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/src/dg2.c"
     "${CMAKE_CURRENT_LIST_DIR}/src/dg2_circ_buff.c"
-    "${CMAKE_CURRENT_LIST_DIR}/src/dg2_curve.c"
+    "${CMAKE_CURRENT_LIST_DIR}/src/dg2_crc.c"
     "${CMAKE_CURRENT_LIST_DIR}/src/dg2_disp.c"
     "${CMAKE_CURRENT_LIST_DIR}/src/dg2_pkt.c"
-    "${CMAKE_CURRENT_LIST_DIR}/src/dg2_svi.c"
 )
 
 target_include_directories(dg2 PUBLIC

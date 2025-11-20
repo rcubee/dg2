@@ -10,6 +10,7 @@ static void dg2_disp_process_sync(dg2_disp *disp, dg2_pkt_parse_res *pkt_parse_r
     dg2_disp_sync *sync = &disp->sync;
 
     if (sync->status != DG2_DISP_SYNC_STATUS_BUSY) {
+        // Note: Not waiting any response
         return;
     }
 
@@ -129,7 +130,8 @@ dg2_disp_sync_status dg2_disp_process(dg2_disp *disp)
     return sync->status;
 }
 
-static dg2_error transmit(dg2_disp *disp, dg2_pkt *pkt)
+// TODO: Transfer sync logic here (automatically set sync->cmd and sync->vp if syncing)?
+static dg2_error disp_transmit_pkt(dg2_disp *disp, dg2_pkt *pkt)
 {
     DG2_ASSERT(disp);
     DG2_ASSERT(pkt);
@@ -143,40 +145,74 @@ static dg2_error transmit(dg2_disp *disp, dg2_pkt *pkt)
     return DG2_OK;
 }
 
-static dg2_error sync(dg2_disp *disp)
+static dg2_error disp_sync(dg2_disp *disp)
 {
     DG2_ASSERT(disp);
+
+    disp->sync.status = DG2_DISP_SYNC_STATUS_BUSY;
+    disp->sync.start_time = disp->cb_time(disp->cb_data);
 
     dg2_disp_sync_status sync_status;
     while ((sync_status = dg2_disp_process(disp)) == DG2_DISP_SYNC_STATUS_BUSY)
-        ; // Todo: Sleep
+        ; // Todo: Delay
 
-    return (dg2_error)sync_status; // Note: Sync status is trivially convertable to error
+    return (dg2_error)sync_status; // Note: Sync status is trivially convertible to error
 }
 
-dg2_error dg2_disp_read_vps_async(dg2_disp *disp, uint16_t vp, int16_t *values, uint8_t count)
+static dg2_error disp_sync_read(dg2_disp *disp, uint16_t vp, void *read_dest, size_t read_size, dg2_disp_sync_read_type read_type)
+{
+    // Note: Synchronize read command
+
+    disp->sync.cmd = DG2_CMD_READ;
+    disp->sync.vp = vp;
+    disp->sync.read_dest = read_dest;
+    disp->sync.read_size = read_size;
+    disp->sync.read_type = read_type;
+
+    return disp_sync(disp);
+}
+
+static dg2_error disp_sync_write(dg2_disp *disp, uint16_t vp)
+{
+    // Note: Synchronize write command
+
+    disp->sync.cmd = DG2_CMD_WRITE;
+    disp->sync.vp = vp;
+
+    return disp_sync(disp);
+}
+
+/* Read */
+
+dg2_error dg2_disp_read_vp_async(dg2_disp *disp, uint16_t vp)
 {
     DG2_ASSERT(disp);
-    DG2_ASSERT(values);
+
+    return dg2_disp_read_vps_async(disp, vp, 1);
+}
+
+dg2_error dg2_disp_read_vps_async(dg2_disp *disp, uint16_t vp, uint8_t count)
+{
+    DG2_ASSERT(disp);
     DG2_ASSERT(count > 0);
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_READ, vp);
     dg2_pkt_insert_byte(&pkt, count);
 
-    return transmit(disp, &pkt);
+    return disp_transmit_pkt(disp, &pkt);
 }
 
 dg2_error dg2_disp_read_vp(dg2_disp *disp, uint16_t vp, int16_t *value)
 {
     DG2_ASSERT(disp);
 
-    return dg2_disp_read_vps(disp, vp, value, 1);
+    return dg2_disp_read_vps(disp, vp, 1, value);
 }
 
-dg2_error dg2_disp_read_vps(dg2_disp *disp, uint16_t vp, int16_t *values, uint8_t count)
+dg2_error dg2_disp_read_vps(dg2_disp *disp, uint16_t vp, uint8_t count, int16_t *dest)
 {
     DG2_ASSERT(disp);
-    DG2_ASSERT(values);
+    DG2_ASSERT(dest);
     DG2_ASSERT(count > 0);
 
     if (disp->sync.status == DG2_DISP_SYNC_STATUS_BUSY) {
@@ -184,39 +220,50 @@ dg2_error dg2_disp_read_vps(dg2_disp *disp, uint16_t vp, int16_t *values, uint8_
     }
 
     dg2_error error;
-    if ((error = dg2_disp_read_vps_async(disp, vp, values, count)) != DG2_OK) {
+    if ((error = dg2_disp_read_vps_async(disp, vp, count)) != DG2_OK) {
         return error;
     }
 
-    disp->sync.status = DG2_DISP_SYNC_STATUS_BUSY;
-    disp->sync.start_time = disp->cb_time(disp->cb_data);
-    disp->sync.cmd = DG2_CMD_READ;
-    disp->sync.vp = vp;
-    disp->sync.read_dest = values;
-    disp->sync.read_size = 2 * count;
-    disp->sync.read_type = DG2_DISP_SYNC_READ_TYPE_U16;
-
-    return sync(disp);
+    return disp_sync_read(disp, vp, dest, 2 * count, DG2_DISP_SYNC_READ_TYPE_U16);
 }
 
-dg2_error dg2_disp_write_vp_async(dg2_disp *disp, uint16_t vp, int16_t value)
-{
-    DG2_ASSERT(disp);
+/* Write */
 
-    return dg2_disp_write_vps_async(disp, vp, &value, 1);
+dg2_error dg2_disp_write_vp_async(dg2_disp *disp, uint16_t vp, int16_t data)
+{
+    return dg2_disp_write_vps_async(disp, vp, 1, &data);
 }
 
-dg2_error dg2_disp_write_vps_async(dg2_disp *disp, uint16_t vp, int16_t *values, uint8_t count)
+dg2_error dg2_disp_write_vps_async(dg2_disp *disp, uint16_t vp, uint8_t count, const int16_t *src)
 {
     DG2_ASSERT(disp);
-    DG2_ASSERT(values);
+    DG2_ASSERT(src);
 
     if (count < 1) {
         return DG2_OK;
     }
 
     dg2_pkt pkt = dg2_disp_pkt_init(disp, DG2_CMD_WRITE, vp);
-    dg2_pkt_insert_halfwords(&pkt, (uint16_t*)values, count);
+    dg2_pkt_insert_halfwords(&pkt, (uint16_t*)src, count);
 
-    return transmit(disp, &pkt);
+    return disp_transmit_pkt(disp, &pkt);
+}
+
+dg2_error dg2_disp_write_vp(dg2_disp *disp, uint16_t vp, int16_t data)
+{
+    return dg2_disp_write_vps(disp, vp, 1, &data);
+}
+
+dg2_error dg2_disp_write_vps(dg2_disp *disp, uint16_t vp, uint8_t count, const int16_t *src)
+{
+    if (disp->sync.status == DG2_DISP_SYNC_STATUS_BUSY) {
+        return DG2_ERROR_BUSY;
+    }
+
+    dg2_error error;
+    if ((error = dg2_disp_write_vps_async(disp, vp, count, src)) != DG2_OK) {
+        return error;
+    }
+
+    return disp_sync_write(disp, vp);
 }

@@ -61,7 +61,6 @@ void dg2_write_halfwords(void *dest, uint16_t *halfwords, size_t count)
 
     size_t offset = 0;
     for (size_t i = 0; i < count; ++i) {
-        // uint16_t halfword = DG2_LE_TO_BE_HALFWORD(halfwords[i]); TODO
         uint16_t halfword = DG2_SWAP16(halfwords[i]);
 
         memcpy(dest + offset, &halfword, sizeof(uint16_t));
@@ -76,33 +75,9 @@ void dg2_write_words(void *dest, uint32_t *words, size_t count)
 
     size_t offset = 0;
     for (size_t i = 0; i < count; ++i) {
-        // uint32_t word = DG2_LE_TO_BE_WORD(words[i]); TODO
         uint32_t word = DG2_SWAP32(words[i]);
 
         memcpy(dest + offset, &word, sizeof(uint32_t));
         offset += sizeof(uint32_t);
     }
-}
-
-uint16_t dg2_crc(uint8_t *data, size_t size)
-{
-    uint16_t crc = 0xFFFF;
-
-    for (size_t i = 0; i < size; ++i)
-    {
-        crc ^= data[i];
-
-        for (uint8_t j = 0; j < 8; ++j)
-        {
-            if (crc & 0x0001)
-            {
-                crc >>= 1;
-                crc ^= 0xA001;
-            }
-            else
-                crc >>= 1;
-        }
-    }
-
-    return crc;
 }

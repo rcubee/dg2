@@ -38,7 +38,7 @@ typedef struct dg2_disp_sync
     uint16_t vp;
     void *read_dest;
     size_t read_size;
-    dg2_disp_sync_read_type read_type;
+    dg2_disp_sync_read_type read_type; // TODO: SVI structures differ a lot - should specific functions be used to read instead?
 } dg2_disp_sync;
 
 typedef struct dg2_disp
@@ -68,11 +68,15 @@ void dg2_disp_init(dg2_disp *disp,
 
 dg2_disp_sync_status dg2_disp_process(dg2_disp *disp);
 
-dg2_error dg2_disp_read_vp(dg2_disp *disp, uint16_t vp, int16_t *value);
-dg2_error dg2_disp_read_vps(dg2_disp *disp, uint16_t vp, int16_t *values, uint8_t count);
+dg2_error dg2_disp_read_vp_async(dg2_disp *disp, uint16_t vp);
+dg2_error dg2_disp_read_vps_async(dg2_disp *disp, uint16_t vp, uint8_t count);
+dg2_error dg2_disp_read_vp(dg2_disp *disp, uint16_t vp, int16_t *dest);
+dg2_error dg2_disp_read_vps(dg2_disp *disp, uint16_t vp, uint8_t count, int16_t *dest);
 
-dg2_error dg2_disp_write_vp_async(dg2_disp *disp, uint16_t vp, int16_t value);
-dg2_error dg2_disp_write_vps_async(dg2_disp *disp, uint16_t vp, int16_t *values, uint8_t count);
+dg2_error dg2_disp_write_vp_async(dg2_disp *disp, uint16_t vp, int16_t data);
+dg2_error dg2_disp_write_vps_async(dg2_disp *disp, uint16_t vp, uint8_t count, const int16_t *src);
+dg2_error dg2_disp_write_vp(dg2_disp *disp, uint16_t vp, int16_t data);
+dg2_error dg2_disp_write_vps(dg2_disp *disp, uint16_t vp, uint8_t count, const int16_t *src);
 
 #ifdef __cplusplus
 }

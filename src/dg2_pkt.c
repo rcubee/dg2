@@ -83,7 +83,6 @@ void dg2_pkt_finish(dg2_pkt *pkt, dg2_cb_crc cb_crc)
 
     if (cb_crc) {
         uint16_t crc = cb_crc((uint8_t*)pkt->header + 3, pkt->size - 3);
-        // crc = DG2_LE_TO_BE_HALFWORD(crc); // TODO: Remove
         crc = DG2_SWAP16(crc);
 
         dg2_pkt_insert_halfword(pkt, crc);
