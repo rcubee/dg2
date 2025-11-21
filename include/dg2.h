@@ -48,13 +48,8 @@ typedef enum dg2_error
 
 char *dg2_error_to_str(dg2_error error);
 
-void dg2_read_bytes(uint8_t *dest, uint8_t *bytes, size_t count);
-void dg2_read_halfwords(uint16_t *dest, uint8_t *halfwords, size_t count);
-// void dg2_read_words(uint32_t *dest, uint8_t *words, size_t count);
-
-void dg2_write_bytes(void *dest, uint8_t *bytes, size_t count);
-void dg2_write_halfwords(void *dest, uint16_t *halfwords, size_t count);
-void dg2_write_words(void *dest, uint32_t *words, size_t count);
+void dg2_copy_bytes(uint8_t *dest, uint8_t *src, size_t count);
+void dg2_copy_halfwords(uint8_t *dest, uint8_t *src, size_t count);
 
 uint16_t dg2_crc(uint8_t *data, size_t size);
 

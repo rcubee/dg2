@@ -71,9 +71,6 @@ void dg2_pkt_insert_bytes(dg2_pkt *pkt, uint8_t *bytes, size_t count);
 void dg2_pkt_insert_halfword(dg2_pkt *pkt, uint16_t halfword);
 void dg2_pkt_insert_halfwords(dg2_pkt *pkt, uint16_t *halfwords, size_t count);
 
-void dg2_pkt_insert_word(dg2_pkt *pkt, uint32_t word);
-void dg2_pkt_insert_words(dg2_pkt *pkt, uint32_t *words, size_t count);
-
 void dg2_pkt_finish(dg2_pkt *pkt, dg2_cb_crc cb_crc);
 
 dg2_pkt_parse_res dg2_pkt_parse(const uint8_t *buff, size_t buff_size, dg2_cb_crc cb_crc);

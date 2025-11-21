@@ -40,7 +40,7 @@ void dg2_pkt_insert_bytes(dg2_pkt *pkt, uint8_t *bytes, size_t count)
     DG2_ASSERT(pkt->buff);
     DG2_ASSERT(pkt->size + count * sizeof(uint8_t) <= 253); // Note: Maximum packet size is 253 (excluding CRC)
 
-    dg2_write_bytes(pkt->buff + pkt->size, bytes, count);
+    dg2_copy_bytes(pkt->buff + pkt->size, bytes, count);
 
     pkt->size += count * sizeof(uint8_t);
 }
@@ -56,25 +56,9 @@ void dg2_pkt_insert_halfwords(dg2_pkt *pkt, uint16_t *halfwords, size_t count)
     DG2_ASSERT(pkt->buff);
     DG2_ASSERT(pkt->size + count * sizeof(uint16_t) <= 253); // Note: Maximum packet size is 253 (excluding CRC)
 
-    dg2_write_halfwords(pkt->buff + pkt->size, halfwords, count);
+    dg2_copy_halfwords(pkt->buff + pkt->size, (uint8_t*)halfwords, count);
 
     pkt->size += count * sizeof(uint16_t);
-}
-
-void dg2_pkt_insert_word(dg2_pkt *pkt, uint32_t word)
-{
-    dg2_pkt_insert_words(pkt, &word, 1);
-}
-
-void dg2_pkt_insert_words(dg2_pkt *pkt, uint32_t *words, size_t count)
-{
-    DG2_ASSERT(pkt);
-    DG2_ASSERT(pkt->buff);
-    DG2_ASSERT(pkt->size + count * sizeof(uint32_t) <= 253); // Note: Maximum packet size is 253 (excluding CRC)
-
-    dg2_write_words(pkt->buff + pkt->size, words, count);
-
-    pkt->size += count * sizeof(uint32_t);
 }
 
 void dg2_pkt_finish(dg2_pkt *pkt, dg2_cb_crc cb_crc)

@@ -33,12 +33,12 @@ static void dg2_disp_process_sync(dg2_disp *disp, dg2_pkt_parse_res *pkt_parse_r
         if ((sync->read_dest != NULL) && (sync->read_size > 0)) {
             switch (sync->read_type) {
             case DG2_DISP_SYNC_READ_TYPE_U8: {
-                dg2_read_bytes(sync->read_dest, pkt_parse_res->payload, sync->read_size);
+                dg2_copy_bytes(sync->read_dest, pkt_parse_res->payload, sync->read_size);
                 break;
             }
 
             case DG2_DISP_SYNC_READ_TYPE_U16: {
-                dg2_read_halfwords(sync->read_dest, pkt_parse_res->payload, (sync->read_size >> 1 /* Divide by 2 */));
+                dg2_copy_halfwords(sync->read_dest, pkt_parse_res->payload, (sync->read_size >> 1 /* Divide by 2 */));
                 break;
             }
             }
