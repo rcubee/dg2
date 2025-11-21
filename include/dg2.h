@@ -18,7 +18,7 @@ extern "C"
 #ifdef DG2_ASSERT_ENABLE
 #define DG2_ASSERT(expr) assert(expr)
 #else
-#define DG2_ASSERT(expr) (void)
+#define DG2_ASSERT(expr) ((void)0)
 #endif
 
 #define DG2_MIN(expr1, expr2) ({ \
