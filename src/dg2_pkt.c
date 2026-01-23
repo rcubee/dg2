@@ -34,7 +34,7 @@ void dg2_pkt_insert_byte(dg2_pkt *pkt, uint8_t byte)
     dg2_pkt_insert_bytes(pkt, &byte, 1);
 }
 
-void dg2_pkt_insert_bytes(dg2_pkt *pkt, uint8_t *bytes, size_t count)
+void dg2_pkt_insert_bytes(dg2_pkt *pkt, const uint8_t *bytes, size_t count)
 {
     DG2_ASSERT(pkt);
     DG2_ASSERT(pkt->buff);
@@ -50,7 +50,7 @@ void dg2_pkt_insert_halfword(dg2_pkt *pkt, uint16_t halfword)
     dg2_pkt_insert_halfwords(pkt, &halfword, 1);
 }
 
-void dg2_pkt_insert_halfwords(dg2_pkt *pkt, uint16_t *halfwords, size_t count)
+void dg2_pkt_insert_halfwords(dg2_pkt *pkt, const uint16_t *halfwords, size_t count)
 {
     DG2_ASSERT(pkt);
     DG2_ASSERT(pkt->buff);
