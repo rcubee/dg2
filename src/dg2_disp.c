@@ -10,7 +10,7 @@ static void dg2_disp_process_sync(dg2_disp *disp, dg2_pkt_parse_res *pkt_parse_r
     dg2_disp_sync *sync = &disp->sync;
 
     if (sync->status != DG2_DISP_SYNC_STATUS_BUSY) {
-        // Note: Not waiting any response
+        // Note: Not waiting for any response
         return;
     }
 
