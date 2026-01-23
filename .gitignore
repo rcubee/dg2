@@ -1,2 +1,5 @@
 build/
 cmake/
+.cache
+.vscode
+.zed
