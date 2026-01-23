@@ -15,12 +15,12 @@ char *dg2_error_to_str(dg2_error error)
     }
 }
 
-void dg2_copy_bytes(uint8_t *dest, uint8_t *src, size_t count)
+void dg2_copy_bytes(uint8_t *dest, const uint8_t *src, size_t count)
 {
     memcpy(dest, src, count);
 }
 
-void dg2_copy_halfwords(uint8_t *dest, uint8_t *src, size_t count)
+void dg2_copy_halfwords(uint8_t *dest, const uint8_t *src, size_t count)
 {
     for (size_t i = 0; i < (count << 1 /* Multiply by 2 */); i += 2) {
         dest[i] = src[i + 1];
