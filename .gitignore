@@ -1,5 +1,12 @@
 build/
 cmake/
+
 .cache
+compile_commands.json
+
 .vscode
 .zed
+
+examples/*/Debug
+examples/*/Release
+examples/*/*.launch
