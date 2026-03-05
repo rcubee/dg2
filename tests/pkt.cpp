@@ -1,6 +1,8 @@
 #include <array>
+#include <cstdint>
 #include "dg2_pkt.h"
 #include <gtest/gtest.h>
+#include "pkts.hpp"
 
 TEST(dg2_pkt, Initialization)
 {
@@ -45,49 +47,25 @@ TEST(dg2_pkt, BuildHeader)
 
 TEST(dg2_pkt, Parse)
 {
-    std::array<std::uint8_t, DG2_PKT_MAX_SIZE> buff = { };
+    for (auto& [title, packet, expected, useCRC] : GetPacketParseTests()) {
+        std::cout << title << std::endl;
 
-    struct packet_parse_result
-    {
-        dg2_pkt_parse_err err;
-        size_t bytes_consumed;
-    };
+        if (packet.empty()) {
+            packet.reserve(1); // Note: In case the vector is empty, call reserve so that .data() doesn't return a nullptr
+        }
 
-    // TODO: Load from file
+        dg2_pkt_parse_res res { dg2_pkt_parse(packet.data(), packet.size(), useCRC ? dg2_crc : nullptr) };
 
-    std::vector<std::pair<std::vector<std::uint8_t>, packet_parse_result>> mock_data = {
-        { { 0 }, { DG2_PKT_PARSE_ERR_NOT_FOUND, 0 } }, /* No data */
-
-        { { DG2_PKT_FHL }, { DG2_PKT_PARSE_ERR_NOT_FOUND, 1 } }, /* No packet */
-
-        { { 0x01, 0x02, 0x03, 0x04 }, { DG2_PKT_PARSE_ERR_NOT_FOUND, 4 } }, /* No packet */
-
-        { { 0x43, DG2_PKT_FHH, 0x00, DG2_PKT_FHL, DG2_PKT_FHH, DG2_PKT_FHH, DG2_PKT_FHH, 0x23 }, { DG2_PKT_PARSE_ERR_NOT_FOUND, 8 } }, /* No packet */
-
-        { { DG2_PKT_FHH, 0x00, DG2_PKT_FHL, DG2_PKT_FHH, 0x00 }, { DG2_PKT_PARSE_ERR_NOT_FOUND, 5 } }, /* No packet */
-
-        { { DG2_PKT_FHH }, { DG2_PKT_PARSE_ERR_INCOMPLETE, 0 } }, /* Incomplete packet */
-
-        { { DG2_PKT_FHH, DG2_PKT_FHL }, { DG2_PKT_PARSE_ERR_INCOMPLETE, 0 } }, /* Incomplete packet */
-
-        { { DG2_PKT_FHH, DG2_PKT_FHH, DG2_PKT_FHL }, { DG2_PKT_PARSE_ERR_INCOMPLETE, 1 } }, /* Incomplete packet */
-
-        { { 0x04, DG2_PKT_FHH, 3, DG2_PKT_FHH, DG2_PKT_FHL }, { DG2_PKT_PARSE_ERR_INCOMPLETE, 3 } }, /* Incomplete packet */
-
-        { { 0x02, 0x5F, 0x25, DG2_PKT_FHH, DG2_PKT_FHL, 0x53 }, { DG2_PKT_PARSE_ERR_INCOMPLETE, 3 } }, /* Incomplete packet */
-
-        { { 0x03, 0x12, DG2_PKT_FHH, DG2_PKT_FHL, 0x53, DG2_CMD_READ }, { DG2_PKT_PARSE_ERR_INCOMPLETE, 2 } }, /* Incomplete packet, header present */
-    };
-
-    mock_data.front().first.clear();
-
-    for (const auto& [data, expected] : mock_data) {
-        std::size_t bytes_consumed { 0 };
-        dg2_pkt_header header;
-
-        dg2_pkt_parse_res res { dg2_pkt_parse((uint8_t*)data.data(), data.size(), dg2_crc) };
-
+        // Throw instead?
         ASSERT_EQ(res.err, expected.err);
-        ASSERT_EQ(res.bytes_consumed, expected.bytes_consumed);
+        ASSERT_EQ(res.bytes_consumed, expected.bytesConsumed);
+
+        if (expected.cmd.has_value()) {
+            ASSERT_EQ(res.cmd, expected.cmd);
+        }
+
+        if (expected.vp.has_value()) {
+            ASSERT_EQ(res.vp, expected.vp);
+        }
     }
 }
