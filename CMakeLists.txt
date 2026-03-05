@@ -13,8 +13,9 @@ add_library(dg2 STATIC)
 target_compile_options(dg2 PRIVATE -Wall -Werror -Werror=switch-enum)
 
 # Available built-in CMake build options: Debug, RelWithDebInfo, Release, MinSizeRel
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-target_compile_definitions(dg2 PRIVATE DG2_ASSERT_ENABLE)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message("Enabled asserts")
+    target_compile_definitions(dg2 PRIVATE DG2_ASSERT_ENABLE)
 endif()
 
 target_sources(dg2 PRIVATE
