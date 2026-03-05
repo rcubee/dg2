@@ -1,3 +1,4 @@
+#include "dg2.h"
 #include "dg2_pkt.h"
 
 /*
@@ -27,6 +28,19 @@ void dg2_pkt_build_header(dg2_pkt *pkt, dg2_cmd cmd, uint16_t vp)
     pkt->size = sizeof(dg2_pkt_header);
 
     dg2_pkt_insert_halfword(pkt, vp);
+}
+
+void dg2_pkt_set_header_and_vp(dg2_pkt *pkt, dg2_cmd cmd, uint16_t vp)
+{
+    DG2_ASSERT(pkt);
+    DG2_ASSERT(pkt->header);
+
+    pkt->header->fhh = DG2_PKT_FHH;
+    pkt->header->fhl = DG2_PKT_FHL;
+    pkt->header->cmd = cmd;
+
+    pkt->buff[4] = vp >> 8;
+    pkt->buff[5] = vp;
 }
 
 void dg2_pkt_insert_byte(dg2_pkt *pkt, uint8_t byte)
@@ -147,4 +161,20 @@ dg2_pkt_parse_res dg2_pkt_parse(const uint8_t *buff, size_t buff_size, dg2_cb_cr
     }
 
     return res;
+}
+
+void dg2_pkt_build_read_vps(dg2_pkt *pkt, uint16_t vp, uint8_t count)
+{
+    dg2_pkt_set_header_and_vp(pkt, DG2_CMD_READ, vp);
+    pkt->buff[6] = count;
+
+    pkt->size = sizeof(dg2_pkt_header) + 2 + 1;
+}
+
+void dg2_pkt_build_write_vps(dg2_pkt *pkt, uint16_t vp, const int16_t *src, uint8_t count)
+{
+    dg2_pkt_set_header_and_vp(pkt, DG2_CMD_WRITE, vp);
+    dg2_copy_halfwords(pkt->buff + 6, (const uint8_t*)src, count);
+
+    pkt->size = sizeof(dg2_pkt_header) + 2 /* vp */ + 2 * count;
 }

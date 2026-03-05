@@ -7,15 +7,13 @@ extern "C"
 #endif // __cplusplus
 
 #include <assert.h>
-#include "dg2_conf.h"
-#include "dg2_crc.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
 #define DG2_ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
-#ifdef DG2_ASSERT_ENABLE
+#ifdef DG2_ASSERT_ENABLE_
 #define DG2_ASSERT(expr) assert(expr)
 #else
 #define DG2_ASSERT(expr) ((void)0)
@@ -32,7 +30,7 @@ extern "C"
 
 #define DG2_RESULT(expr) { dg2_error e; \
     if ((e = (expr)) != DG2_OK) { \
-        printf("%s resulted with error: %s\n",(#expr), dg2_error_to_str(e)); \
+        printf("%s resulted with error: %s\n", (#expr), dg2_error_to_str(e)); \
     }  \
 }
 

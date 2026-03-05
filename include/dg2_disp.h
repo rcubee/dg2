@@ -8,75 +8,88 @@ extern "C"
 
 #include "dg2.h"
 #include "dg2_circ_buff.h"
+#include "dg2_conf.h"
+#include "dg2_crc.h"
 #include "dg2_pkt.h"
+#include <stdbool.h>
 
-typedef void* dg2_cb_data;
-typedef size_t (*dg2_cb_write)(dg2_cb_data data, uint8_t *dest, size_t size);
-typedef size_t (*dg2_cb_time)(dg2_cb_data data);
-typedef void (*dg2_cb_process)(dg2_cb_data data);
-typedef void (*dg2_cb_packet)(dg2_cb_data data, dg2_cmd cmd, uint16_t vp, uint8_t *payload, uint8_t payload_size);
+typedef void* dg2_user_data;
+typedef size_t (*dg2_cb_transmit)(dg2_user_data data, const uint8_t *src, size_t size);
+typedef size_t (*dg2_cb_time)(dg2_user_data data);
+typedef void (*dg2_cb_yield)(dg2_user_data data, size_t timeout_in);
+typedef void (*dg2_cb_packet)(dg2_user_data data, dg2_cmd cmd, uint16_t vp, uint8_t *payload, uint8_t payload_size);
+typedef void (*dg2_cb_lock)(dg2_user_data data);
+typedef void (*dg2_cb_unlock)(dg2_user_data data);
 
 typedef enum dg2_disp_sync_status
 {
-    DG2_DISP_SYNC_STATUS_OK = DG2_OK,
-    DG2_DISP_SYNC_STATUS_BUSY = DG2_ERROR_BUSY,
-    DG2_DISP_SYNC_STATUS_TIMEOUT =  DG2_ERROR_TIMEOUT
+    DG2_DISP_SYNC_STATUS_SYNCED = DG2_OK,
+    DG2_DISP_SYNC_STATUS_SYNCING = DG2_ERROR_BUSY,
+    DG2_DISP_SYNC_STATUS_TIMEOUT = DG2_ERROR_TIMEOUT
 } dg2_disp_sync_status;
 
-typedef enum dg2_disp_sync_read_type
+typedef void (*dg2_disp_sync_read_parser)(void *dest, void *payload, size_t payload_size);
+
+typedef struct dg2_disp_config
 {
-    DG2_DISP_SYNC_READ_TYPE_U8 = 0,
-    DG2_DISP_SYNC_READ_TYPE_U16
-} dg2_disp_sync_read_type;
+    dg2_cb_transmit cb_transmit;
+    dg2_cb_crc cb_crc;
+    dg2_cb_time cb_time;
+    dg2_cb_yield cb_yield;
+    dg2_cb_packet cb_packet;
+    dg2_cb_lock cb_lock;
+    dg2_cb_unlock cb_unlock;
+    dg2_user_data user_data;
+
+    size_t timeout;
+} dg2_disp_config;
 
 typedef struct dg2_disp_sync
 {
     dg2_disp_sync_status status;
     size_t start_time;
-    size_t timeout;
+    size_t timeout; /* In user-defined units */
+
     dg2_cmd cmd;
     uint16_t vp;
+
     void *read_dest;
-    size_t read_size;
-    dg2_disp_sync_read_type read_type; // TODO: SVI structures differ a lot - should specific functions be used to read instead?
+    size_t read_payload_size; /* In halfwords */
+    dg2_disp_sync_read_parser read_parser;
 } dg2_disp_sync;
 
 typedef struct dg2_disp
 {
-    dg2_cb_write cb_write;
-    dg2_cb_time cb_time;
-    dg2_cb_process cb_process;
-    dg2_cb_packet cb_packet;
+    dg2_cb_transmit cb_transmit;
     dg2_cb_crc cb_crc;
-    dg2_cb_data cb_data;
-
-    dg2_disp_sync sync;
+    dg2_cb_time cb_time;
+    dg2_cb_yield cb_yield;
+    dg2_cb_packet cb_packet;
+    dg2_cb_lock cb_lock;
+    dg2_cb_unlock cb_unlock;
+    dg2_user_data user_data;
 
     uint8_t rx_buff[DG2_DISP_RX_BUFF_CAPACITY];
     dg2_circ_buff rx_circ_buff;
 
     uint8_t tx_buff[DG2_DISP_TX_BUFF_CAPACITY];
+
+    dg2_disp_sync sync;
 } dg2_disp;
 
-void dg2_disp_init(dg2_disp *disp,
-                   dg2_cb_write cb_write,
-                   dg2_cb_time cb_time,
-                   dg2_cb_process cb_process,
-                   dg2_cb_packet cb_packet,
-                   dg2_cb_crc cb_crc,
-                   dg2_cb_data cb_data);
+void dg2_disp_init(dg2_disp *disp, const dg2_disp_config *config);
 
-dg2_disp_sync_status dg2_disp_process(dg2_disp *disp);
+dg2_error dg2_disp_process(dg2_disp *disp);
 
 dg2_error dg2_disp_read_vp_async(dg2_disp *disp, uint16_t vp);
 dg2_error dg2_disp_read_vps_async(dg2_disp *disp, uint16_t vp, uint8_t count);
 dg2_error dg2_disp_read_vp(dg2_disp *disp, uint16_t vp, int16_t *dest);
-dg2_error dg2_disp_read_vps(dg2_disp *disp, uint16_t vp, uint8_t count, int16_t *dest);
+dg2_error dg2_disp_read_vps(dg2_disp *disp, uint16_t vp, int16_t *dest, uint8_t count);
 
 dg2_error dg2_disp_write_vp_async(dg2_disp *disp, uint16_t vp, int16_t data);
-dg2_error dg2_disp_write_vps_async(dg2_disp *disp, uint16_t vp, uint8_t count, const int16_t *src);
+dg2_error dg2_disp_write_vps_async(dg2_disp *disp, uint16_t vp, const int16_t *src, uint8_t count);
 dg2_error dg2_disp_write_vp(dg2_disp *disp, uint16_t vp, int16_t data);
-dg2_error dg2_disp_write_vps(dg2_disp *disp, uint16_t vp, uint8_t count, const int16_t *src);
+dg2_error dg2_disp_write_vps(dg2_disp *disp, uint16_t vp, const int16_t *src, uint8_t count);
 
 #ifdef __cplusplus
 }
