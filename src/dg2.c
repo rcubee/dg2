@@ -20,9 +20,12 @@ void dg2_copy_bytes(uint8_t *dest, const uint8_t *src, size_t count)
     memcpy(dest, src, count);
 }
 
-void dg2_copy_halfwords(uint8_t *dest, const uint8_t *src, size_t count)
+// Note: Copies and swaps UP TO SIZE_MAX / 4 halfwords
+void dg2_copy_and_swap_halfwords(uint8_t *restrict dest, const uint8_t *restrict src, size_t count)
 {
-    for (size_t i = 0; i < (count << 1 /* Multiply by 2 */); i += 2) {
+    size_t bytes_to_copy = count << 1; // Note: Multiply by 2
+
+    for (size_t i = 0; i < bytes_to_copy; i += 2) {
         dest[i] = src[i + 1];
         dest[i + 1] = src[i];
     }

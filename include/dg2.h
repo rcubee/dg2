@@ -47,7 +47,7 @@ typedef enum dg2_error
 char *dg2_error_to_str(dg2_error error);
 
 void dg2_copy_bytes(uint8_t *dest, const uint8_t *src, size_t count);
-void dg2_copy_halfwords(uint8_t *dest, const uint8_t *src, size_t count);
+void dg2_copy_and_swap_halfwords(uint8_t *dest, const uint8_t *src, size_t count);
 
 #ifdef __cplusplus
 }

@@ -70,7 +70,7 @@ void dg2_pkt_insert_halfwords(dg2_pkt *pkt, const uint16_t *halfwords, size_t co
     DG2_ASSERT(pkt->buff);
     DG2_ASSERT(pkt->size + count * sizeof(uint16_t) <= 253); // Note: Maximum packet size is 253 (excluding CRC)
 
-    dg2_copy_halfwords(pkt->buff + pkt->size, (uint8_t*)halfwords, count);
+    dg2_copy_and_swap_halfwords(pkt->buff + pkt->size, (uint8_t*)halfwords, count);
 
     pkt->size += count * sizeof(uint16_t);
 }
@@ -174,7 +174,7 @@ void dg2_pkt_build_read_vps(dg2_pkt *pkt, uint16_t vp, uint8_t count)
 void dg2_pkt_build_write_vps(dg2_pkt *pkt, uint16_t vp, const int16_t *src, uint8_t count)
 {
     dg2_pkt_set_header_and_vp(pkt, DG2_CMD_WRITE, vp);
-    dg2_copy_halfwords(pkt->buff + 6, (const uint8_t*)src, count);
+    dg2_copy_and_swap_halfwords(pkt->buff + 6, (const uint8_t*)src, count);
 
     pkt->size = sizeof(dg2_pkt_header) + 2 /* vp */ + 2 * count;
 }

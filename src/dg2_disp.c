@@ -275,7 +275,7 @@ dg2_error dg2_disp_read_vp_async(dg2_disp *disp, uint16_t vp)
 
 static void read_vps_parser(void *dest, void *payload, size_t payload_size)
 {
-    dg2_copy_halfwords(dest, payload, payload_size);
+    dg2_copy_and_swap_halfwords(dest, payload, payload_size);
 }
 
 dg2_error dg2_disp_read_vp(dg2_disp *disp, uint16_t vp, int16_t *dest)
