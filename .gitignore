@@ -7,6 +7,8 @@ compile_commands.json
 .vscode
 .zed
 
+# STM32CubeIDE specific
 examples/*/Debug
 examples/*/Release
 examples/*/*.launch
+examples/*/.settings
