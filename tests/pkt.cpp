@@ -73,7 +73,18 @@ TEST_P(PacketParseTest, /* deliberately left blank */)
         EXPECT_EQ(res.vp, expected.vp);
     }
 
-    // Todo: Check payload and payload_size fields of dg2_pkt_parse_res
+    if (res.cmd == DG2_CMD_READ) {
+        EXPECT_EQ(res.payload, packet.data() + DG2_PKT_INDEX_PAYLOAD);
+
+        if (expected.payload_size.has_value()) {
+            EXPECT_EQ(res.payload_size, expected.payload_size);
+        }
+    }
+    else if (res.cmd == DG2_CMD_WRITE) {
+        EXPECT_EQ(res.payload, nullptr);
+
+        EXPECT_EQ(res.payload_size, 0);
+    }
 }
 
 static void ValidateTestName(const std::string& test_name)
@@ -117,6 +128,15 @@ INSTANTIATE_TEST_SUITE_P(Incomplete,
 INSTANTIATE_TEST_SUITE_P(Ok,
                          PacketParseTest,
                          ::testing::ValuesIn(std::begin(gOkPacketTests), std::end(gOkPacketTests)),
+                         [] (const ::testing::TestParamInfo<PacketParseTestCase>& info) {
+                             ValidateTestName(info.param.test_name);
+
+                             return info.param.test_name;
+                         });
+
+INSTANTIATE_TEST_SUITE_P(Misc,
+                         PacketParseTest,
+                         ::testing::ValuesIn(std::begin(gMiscPacketTests), std::end(gMiscPacketTests)),
                          [] (const ::testing::TestParamInfo<PacketParseTestCase>& info) {
                              ValidateTestName(info.param.test_name);
 
