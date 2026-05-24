@@ -57,7 +57,7 @@ int _write(int file, char *ptr, int len)
   return len;
 }
 
-size_t cb_transmit(dg2_user_data data, const uint8_t *buff, size_t len)
+size_t cb_transmit(const uint8_t *buff, size_t len, dg2_user_data data)
 {
     return HAL_UART_Transmit(&huart1, buff, len, HAL_MAX_DELAY) == HAL_OK ? len : 0;
 }
@@ -67,7 +67,7 @@ size_t cb_time(dg2_user_data data)
     return HAL_GetTick();
 }
 
-void cb_yield(dg2_user_data user_data, size_t timeout_in)
+void cb_yield(size_t timeout_in, dg2_user_data user_data)
 {
     dg2_disp *disp = (dg2_disp*)user_data;
 
@@ -83,7 +83,7 @@ void cb_yield(dg2_user_data user_data, size_t timeout_in)
     dg2_disp_process(disp);
 }
 
-void cb_packet(dg2_user_data data, dg2_cmd cmd, uint16_t vp, uint8_t *payload, uint8_t payload_size)
+void cb_unsolicited_resp(dg2_cmd cmd, uint16_t vp, uint8_t *payload, uint8_t payload_size, dg2_user_data data)
 {
    printf("Received packet: cmd = %s, vp = %04x\n", (cmd == DG2_CMD_READ) ? "Read" : "Write", vp);
 }
@@ -142,7 +142,7 @@ int main(void)
       .cb_crc = &dg2_crc,
       .cb_time = cb_time,
       .cb_yield = cb_yield,
-      .cb_packet = cb_packet,
+      .cb_unsolicited_resp = cb_unsolicited_resp,
       .cb_lock = NULL,
       .cb_unlock = NULL,
       .user_data = &disp,
@@ -162,7 +162,7 @@ int main(void)
       uint16_t PIC_Set = 0x84;
 
       int16_t currentPage;
-      if (dg2_disp_read_vp(&disp, PIC_Now, &currentPage) != DG2_OK) {
+      if (dg2_disp_read_vps(&disp, PIC_Now, 1, &currentPage) != DG2_OK) {
           printf("Failed getting current page\n");
 
           goto failed;
