@@ -37,6 +37,8 @@ extern "C"
     }  \
 }
 
+#define DG2_COMPILER_BARRIER() __asm__ __volatile__("" ::: "memory")
+
 #define DG2_MIN(expr1, expr2) ({ \
     typeof(expr1) _val1 = (expr1); \
     typeof(expr2) _val2 = (expr2); \
