@@ -6,18 +6,36 @@ extern "C"
 {
 #endif // __cplusplus
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
 #define DG2_ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
-#ifdef DG2_ASSERT_ENABLE_
+#ifdef DG2_ASSERT_ENABLE
+#include <assert.h>
 #define DG2_ASSERT(expr) assert(expr)
 #else
 #define DG2_ASSERT(expr) ((void)0)
 #endif
+
+#if DEBUG
+#include <stdio.h>
+#define DG2_TO_STRING_HELPER(x) #x
+#define DG2_TO_STRING(x) DG2_TO_STRING_HELPER(x)
+
+#define DG2_FILE_LINE __FILE__":" DG2_TO_STRING(__LINE__)
+
+#define DG2_LOG(format, ...) printf("[dg2] (" DG2_FILE_LINE "): " format "\n", ##__VA_ARGS__)
+#else
+#define DG2_LOG(...) (void)0
+#endif
+
+#define DG2_RESULT(expr) { dg2_error e; \
+    if ((e = (expr)) != DG2_OK) { \
+        printf("%s resulted with error: %s\n", (#expr), dg2_error_to_str(e)); \
+    }  \
+}
 
 #define DG2_MIN(expr1, expr2) ({ \
     typeof(expr1) _val1 = (expr1); \
@@ -27,12 +45,6 @@ extern "C"
 
 #define DG2_SWAP16(expr) __builtin_bswap16(expr)
 #define DG2_SWAP32(expr) __builtin_bswap32(expr)
-
-#define DG2_RESULT(expr) { dg2_error e; \
-    if ((e = (expr)) != DG2_OK) { \
-        printf("%s resulted with error: %s\n", (#expr), dg2_error_to_str(e)); \
-    }  \
-}
 
 typedef enum dg2_error
 {
