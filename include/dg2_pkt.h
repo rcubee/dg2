@@ -6,6 +6,7 @@ extern "C"
 {
 #endif // __cplusplus
 
+#include "dg2.h"
 #include "dg2_crc.h"
 
 #define DG2_PKT_FHH 0x5AU
@@ -78,8 +79,8 @@ void dg2_pkt_finish(dg2_pkt *pkt, dg2_cb_crc cb_crc);
 
 dg2_pkt_parse_res dg2_pkt_parse(const uint8_t *buff, size_t buff_size, dg2_cb_crc cb_crc);
 
-void dg2_pkt_build_read_vps(dg2_pkt *pkt, uint16_t vp, uint8_t count);
-void dg2_pkt_build_write_vps(dg2_pkt *pkt, uint16_t vp, const int16_t *src, uint8_t count);
+dg2_error dg2_pkt_build_read_vps(dg2_pkt *pkt, uint16_t vp, uint8_t count);
+dg2_error dg2_pkt_build_write_vps(dg2_pkt *pkt, uint16_t vp, const int16_t *src, uint8_t count);
 
 #ifdef __cplusplus
 }

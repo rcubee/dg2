@@ -163,18 +163,24 @@ dg2_pkt_parse_res dg2_pkt_parse(const uint8_t *buff, size_t buff_size, dg2_cb_cr
     return res;
 }
 
-void dg2_pkt_build_read_vps(dg2_pkt *pkt, uint16_t vp, uint8_t count)
+// TODO: Error handling.
+dg2_error dg2_pkt_build_read_vps(dg2_pkt *pkt, uint16_t vp, uint8_t count)
 {
     dg2_pkt_set_header_and_vp(pkt, DG2_CMD_READ, vp);
     pkt->buff[6] = count;
 
     pkt->size = sizeof(dg2_pkt_header) + 2 + 1;
+
+    return DG2_OK;
 }
 
-void dg2_pkt_build_write_vps(dg2_pkt *pkt, uint16_t vp, const int16_t *src, uint8_t count)
+// TODO: Error handling.
+dg2_error dg2_pkt_build_write_vps(dg2_pkt *pkt, uint16_t vp, const int16_t *src, uint8_t count)
 {
     dg2_pkt_set_header_and_vp(pkt, DG2_CMD_WRITE, vp);
     dg2_copy_and_swap_halfwords(pkt->buff + 6, (const uint8_t*)src, count);
 
     pkt->size = sizeof(dg2_pkt_header) + 2 /* vp */ + 2 * count;
+
+    return DG2_OK;
 }
